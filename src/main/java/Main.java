@@ -1,19 +1,51 @@
 import java.util.ArrayList;
 
 public class Main {
+
+    private static final ArrayList<Thread> producers = new ArrayList<>();
+    private static final ArrayList<Thread> consumers = new ArrayList<>();
+
     public static void main(String[] args) throws InterruptedException {
-        ListMedianTask task = new ListMedianTask();
+        ListMedianTask task = new ListMedianTask(4);
 
-        Thread p1 = new Thread(new Producer(task, 3));
-        Thread p2 = new Thread(new Producer(task, 1));
-        Thread c1 = new Thread(new Consumer(task));
+        createProducers(task, 3, new int[]{1, 1, 1});
+        createConsumers(task, 2);
 
-        p1.start();
-        p2.start();
-        c1.start();
+        startProducers();
+        startConsumers();
 
-        p1.join();
-        p2.join();
-        c1.join();
+        joinProducers();
+        joinConsumers();
+    }
+
+    public static void createProducers(ListMedianTask task, int number, int[] delays) {
+        for (int i = 0; i < number; i++) {
+            producers.add(new Thread(new Producer(task, delays[i])));
+        }
+    }
+    public static void createConsumers(ListMedianTask task, int number) {
+        for (int i = 0; i < number; i++) {
+            consumers.add(new Thread(new Consumer(task)));
+        }
+    }
+
+    public static void startProducers() {
+        for(var producer : producers)
+            producer.start();
+    }
+
+    public static void startConsumers() {
+        for(var consumer : consumers)
+            consumer.start();
+    }
+
+    public static void joinProducers() throws InterruptedException {
+        for(var producer : producers)
+            producer.join();
+    }
+
+    public static void joinConsumers() throws InterruptedException {
+        for(var consumer : consumers)
+            consumer.join();
     }
 }

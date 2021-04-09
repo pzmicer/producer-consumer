@@ -2,15 +2,21 @@ import lombok.NoArgsConstructor;
 
 import java.util.*;
 
-@NoArgsConstructor
 public class ListMedianTask {
     private final ArrayDeque<ArrayList<Integer>> queue = new ArrayDeque<>();
+    private int capacity;
     private int produced_k = 1;
     private int consumed_k = 1;
+
+    public ListMedianTask(int capacity) {
+        this.capacity = capacity;
+    }
 
     public void produce(int producerNumber, int sleep) throws InterruptedException {
         while(true) {
             synchronized (this) {
+                while(queue.size() == capacity)
+                    wait();
                 queue.add(getRandomList());
                 System.out.printf("Producer %d produced - %d%n", producerNumber, produced_k++);
                 notify();
@@ -27,6 +33,7 @@ public class ListMedianTask {
                 var list = queue.poll();
                 double med = median(list);
                 System.out.printf("Consumer %d consumed - %d (for list %s median = %.1f)%n", consumerNumber, consumed_k++, list, med);
+                notify();
             }
         }
     }
